@@ -1,0 +1,21 @@
+# Let us ignore the Intellij Stuff
+.idea
+*.iml
+
+# Let us ignore the Eclipse stuff
+.project
+.settings
+.classpath
+
+# Ignore backup files from Emacs
+*~
+
+# Maven related artifacts
+target
+dependency-reduced-pom.xml
+*.log
+
+# Using a Mac means
+.DS_Store
+
+
