@@ -1,0 +1,54 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.define :sputnik do |sputnik|
+    sputnik.vm.box = 'centos/7'
+    sputnik.vm.hostname = 'sputnik'
+    sputnik.vm.network :private_network, ip: "192.168.10.10"
+
+    sputnik.vm.provider "virtualbox" do |vb|
+      vb.memory = 512
+    end
+
+    sputnik.vm.synced_folder "./puppet", "/mnt/puppet",
+                             type: "rsync"
+
+    sputnik.vm.synced_folder "../queries", "/mnt/queries",
+                             type: "rsync"
+
+    # Sources for the the action done by the script
+    # https://docs.puppet.com/puppet/5.0/puppet_platform.html#yum-based-systems
+    # https://osquery.readthedocs.io/en/stable/installation/install-linux/
+
+    $provisioning_script = <<SCRIPT
+echo Machine wird provisioniert
+gpg --keyserver pgp.mit.edu --recv-key 7F438280EF8D349F
+gpg --armor --export release@puppet.com > /etc/pki/rpm-gpg/RPM-GPG-KEY-Puppet-Yum-Repository
+yum-config-manager --add-repo https://yum.puppet.com/puppet/
+yum-config-manager --save --setopt=yum.puppet.com_puppet_.gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-Puppet-Yum-Repository
+
+rpm -ivh https://osquery-packages.s3.amazonaws.com/centos7/noarch/osquery-s3-centos7-repo-1-0.0.noarch.rpm
+
+yum makecache
+yum install -y emacs-nox
+yum install -y puppet-agent.x86_64
+
+# add OS Query
+yum install -y osquery
+
+/opt/puppetlabs/bin/puppet apply /mnt/puppet/manifests/sputnik.pp
+SCRIPT
+
+    sputnik.vm.provision "shell", inline: $provisioning_script
+  end
+
+end
+
+
+# end of file ;-)
+
