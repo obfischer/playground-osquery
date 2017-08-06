@@ -18,4 +18,5 @@ dependency-reduced-pom.xml
 # Using a Mac means
 .DS_Store
 
-
+# Vagrant stuff
+/vagrant/.vagrant/
