@@ -9,7 +9,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define :sputnik do |sputnik|
     sputnik.vm.box = 'centos/7'
     sputnik.vm.hostname = 'sputnik'
+
     sputnik.vm.network :private_network, ip: "192.168.10.10"
+    sputnik.vm.network "forwarded_port", guest: 80, host: 8080
 
     sputnik.vm.provider "virtualbox" do |vb|
       vb.memory = 512
