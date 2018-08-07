@@ -1,7 +1,7 @@
-# OS Shell Playground
+# OSQuery Playground
 
-Small project to setup a CentOS 7 machine
-via Vagrant to play with [OSQuery](https://osquery.io/).
+Small project to setup a CentOS 7 machine via Vagrant to play with 
+[OSQuery](https://osquery.io/).
 
 ## Usage
 

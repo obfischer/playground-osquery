@@ -17,40 +17,39 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vb.memory = 512
     end
 
-    sputnik.vm.synced_folder "./puppet", "/mnt/puppet",
+    sputnik.vm.synced_folder "./puppet", "/puppet",
                              type: "rsync"
 
-    sputnik.vm.synced_folder "../queries", "/mnt/queries",
+    sputnik.vm.synced_folder "../queries", "/queries",
                              type: "rsync"
 
     # Sources for the the action done by the script
-    # https://docs.puppet.com/puppet/5.0/puppet_platform.html#yum-based-systems
+    # https://puppet.com/docs/puppet/5.5/install_linux.html
     # https://osquery.readthedocs.io/en/stable/installation/install-linux/
 
     $provisioning_script = <<SCRIPT
 echo Machine wird provisioniert
-gpg --keyserver pgp.mit.edu --recv-key 7F438280EF8D349F
-gpg --armor --export release@puppet.com > /etc/pki/rpm-gpg/RPM-GPG-KEY-Puppet-Yum-Repository
-yum-config-manager --add-repo https://yum.puppet.com/puppet/
-yum-config-manager --save --setopt=yum.puppet.com_puppet_.gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-Puppet-Yum-Repository
 
+# Add the repositories for Puppet and OSQuery to yum
+rpm -Uvh https://yum.puppetlabs.com/puppet5/puppet5-release-el-7.noarch.rpm
 rpm -ivh https://osquery-packages.s3.amazonaws.com/centos7/noarch/osquery-s3-centos7-repo-1-0.0.noarch.rpm
 
 yum makecache
+
+yum install -y puppet-agent
+yum install -y osquery
 yum install -y emacs-nox
-yum install -y puppet-agent.x86_64
 yum install -y psmisc
 yum install -y tree
 yum install -y httpd
 yum install -y net-tools
 
-# add OS Query
-yum install -y osquery
-
 systemctl enable httpd
 systemctl start httpd
+systemctl enable osqueryd
+systemctl start osqueryd
 
-/opt/puppetlabs/bin/puppet apply /mnt/puppet/manifests/sputnik.pp
+/opt/puppetlabs/bin/puppet apply /puppet/manifests/sputnik.pp
 SCRIPT
 
     sputnik.vm.provision "shell", inline: $provisioning_script
